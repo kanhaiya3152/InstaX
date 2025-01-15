@@ -20,6 +20,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _passwordcontroller = TextEditingController();
   final TextEditingController _usernamecontroller = TextEditingController();
   Uint8List? _image;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -34,6 +35,26 @@ class _SignupScreenState extends State<SignupScreen> {
     setState(() {
       _image = im;
     });
+  }
+
+  void signUpUser() async {
+    setState(() {
+      _isLoading = true;
+    });
+    String res = await AuthMethods().signUpUser(
+      email: _emailcontroller.text,
+      password: _passwordcontroller.text,
+      username: _usernamecontroller.text,
+      file: _image!,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (res != 'success') {
+      showSnackBar(res, context);
+    }
   }
 
   @override
@@ -107,27 +128,22 @@ class _SignupScreenState extends State<SignupScreen> {
                 height: 48,
                 width: 346,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    String res = await AuthMethods().signUpUser(
-                      email: _emailcontroller.text,
-                      password: _passwordcontroller.text,
-                      username: _usernamecontroller.text,
-                      file: _image!,
-                    );
-
-                    print(res);
-                  },
+                  onPressed: signUpUser,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0XFF3797EF),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
-                  child: const Center(
-                    child: Text(
-                      'Sign up',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                  child: Center(
+                    child: _isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(color: primaryColor,),
+                          )
+                        : const Text(
+                            'Sign up',
+                            style: TextStyle(color: Colors.white),
+                          ),
                   ),
                 ),
               ),

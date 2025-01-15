@@ -45,8 +45,35 @@ class AuthMethods {
         // });
         res = 'success';
       }
-    } 
-    catch (err) {
+      else {
+        res = 'Please enter all the fields ';
+      }                   
+    } catch (err) {
+      res = err.toString();
+    }
+    return res;
+  }
+
+  // login user
+  Future<String> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    String res = "Some error occured";
+
+    try {
+      if (email.isNotEmpty || password.isNotEmpty) {
+        await _auth.signInWithEmailAndPassword(
+            email: email,
+            password:
+                password,
+                ); //doesn't want to store it in firebase database that's why cannot using the userCredential
+      res = 'success';
+      } 
+      else {
+        res = 'Please enter all the fields ';
+      }
+    } catch (err) {
       res = err.toString();
     }
     return res;
