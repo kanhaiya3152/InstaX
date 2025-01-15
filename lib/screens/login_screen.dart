@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:insta_demo/resources/auth_methods.dart';
+import 'package:insta_demo/responsive/mobile_screen_layout.dart';
+import 'package:insta_demo/responsive/res_layout.dart';
+import 'package:insta_demo/responsive/web_screen_layout.dart';
 import 'package:insta_demo/screens/signup_screen.dart';
 import 'package:insta_demo/utils/colors.dart';
 import 'package:insta_demo/utils/utils.dart';
@@ -33,7 +36,10 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailcontroller.text, password: _passwordcontroller.text);
 
     if (res == 'success') {
-      //
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (ctx) => const ResponsiveLayout(
+              mobileScreenLayout: MobileScreenLayout(),
+              webScreenLayout: WebScreenLayout())));
     } else {
       showSnackBar(res, context);
     }
@@ -81,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               SizedBox(
                 height: 48,
-                width: 346,
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: loginUser,
                   style: ElevatedButton.styleFrom(

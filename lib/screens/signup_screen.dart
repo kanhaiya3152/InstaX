@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:insta_demo/resources/auth_methods.dart';
+import 'package:insta_demo/responsive/mobile_screen_layout.dart';
+import 'package:insta_demo/responsive/res_layout.dart';
+import 'package:insta_demo/responsive/web_screen_layout.dart';
 import 'package:insta_demo/utils/colors.dart';
 import 'package:insta_demo/utils/utils.dart';
 import 'package:insta_demo/widgets/text_field_input.dart';
@@ -54,6 +57,15 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (res != 'success') {
       showSnackBar(res, context);
+    } else {
+      Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (ctx) => const ResponsiveLayout(
+                  mobileScreenLayout: MobileScreenLayout(),
+                  webScreenLayout: WebScreenLayout()))
+                  
+          );
     }
   }
 
@@ -126,7 +138,7 @@ class _SignupScreenState extends State<SignupScreen> {
               ),
               SizedBox(
                 height: 48,
-                width: 346,
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: signUpUser,
                   style: ElevatedButton.styleFrom(
@@ -138,7 +150,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: Center(
                     child: _isLoading
                         ? const Center(
-                            child: CircularProgressIndicator(color: primaryColor,),
+                            child: CircularProgressIndicator(
+                              color: primaryColor,
+                            ),
                           )
                         : const Text(
                             'Sign up',
