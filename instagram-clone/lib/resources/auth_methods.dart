@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:insta_demo/models/users.dart'
+    as model; // bcz of the same name of the class of 'users' in the firebase_auth
 import 'package:insta_demo/resources/storage_methods.dart';
 
 class AuthMethods {
@@ -28,14 +30,16 @@ class AuthMethods {
 
         // add user to our database
 
-        await _firestore.collection('users').doc(cred.user!.uid).set({
-          'username': username,
-          'uid': cred.user!.uid,
-          'email': email,
-          'followers': [],
-          'Following': [],
-          'photoUrl': photoUrl,
-        });
+        model.Users user = model.Users(
+            email: email,
+            uid:cred.user!.uid,
+            username: username,
+            photoUrl: photoUrl,
+            followers: [],
+            following: [],
+            );
+
+        await _firestore.collection('users').doc(cred.user!.uid).set(user.toJson());
         // await _firestore.collection('users').add({
         //   'usernmae': username,
         //   'uid': cred.user!.uid,
@@ -44,10 +48,9 @@ class AuthMethods {
         //   'Following': [],
         // });
         res = 'success';
-      }
-      else {
+      } else {
         res = 'Please enter all the fields ';
-      }                   
+      }
     } catch (err) {
       res = err.toString();
     }
@@ -64,13 +67,11 @@ class AuthMethods {
     try {
       if (email.isNotEmpty || password.isNotEmpty) {
         await _auth.signInWithEmailAndPassword(
-            email: email,
-            password:
-                password,
-                ); //doesn't want to store it in firebase database that's why cannot using the userCredential
-      res = 'success';
-      } 
-      else {
+          email: email,
+          password: password,
+        ); //doesn't want to store it in firebase database that's why cannot using the userCredential
+        res = 'success';
+      } else {
         res = 'Please enter all the fields ';
       }
     } catch (err) {
