@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: mobileBackgroundColor,
         ),
-        // home:
+       
         home: StreamBuilder(
             stream: FirebaseAuth.instance
                 .authStateChanges(), // check the page is login or not

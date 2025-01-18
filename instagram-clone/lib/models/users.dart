@@ -24,7 +24,7 @@ class Users {
         'photoUrl': photoUrl,
         'followers': followers,
         'following': following,
-      };
+    };
 
   static Users fromSnap(DocumentSnapshot snap) {
     var snapshot = snap.data() as Map<String, dynamic>;
