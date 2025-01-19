@@ -21,6 +21,7 @@ class AddPostScreen extends StatefulWidget {
 class _AddPostScreenState extends State<AddPostScreen> {
   Uint8List? _file;
   final TextEditingController _descriptionController = TextEditingController();
+  bool _isLoading = false;
 
   void postImage(
     String uid,
@@ -28,12 +29,22 @@ class _AddPostScreenState extends State<AddPostScreen> {
     String profileImage,
   ) async {
     try {
+      setState(() {
+        _isLoading = true;
+      });
       String res = await FirestoreMethods().uploadPost(
           _descriptionController.text, _file!, uid, username, profileImage);
 
       if (res == 'success') {
+        setState(() {
+          _isLoading = false;
+        });
         showSnackBar('Posted!', context);
+        clearImage();
       } else {
+        setState(() {
+          _isLoading = false;
+        });
         showSnackBar(res, context);
       }
     } catch (e) {
@@ -82,6 +93,12 @@ class _AddPostScreenState extends State<AddPostScreen> {
         });
   }
 
+  void clearImage() {
+    setState(() {
+      _file = null;
+    });
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -92,76 +109,82 @@ class _AddPostScreenState extends State<AddPostScreen> {
   Widget build(BuildContext context) {
     final Users user = Provider.of<UserProvider>(context).getUser;
 
-        return _file == null
-            ? Center(
-                child: IconButton(
-                    onPressed: () {
-                      _selectImage(context);
-                    },
-                    icon: const Icon(Icons.upload)),
-              )
-            : Scaffold(
-                appBar: AppBar(
-                  backgroundColor: mobileBackgroundColor,
-                  leading: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(CupertinoIcons.arrow_left)),
-                  title: const Text('Post to'),
-                  centerTitle: false,
-                  actions: [
-                    TextButton(
-                        onPressed: () =>
-                            postImage(user.uid, user.username, user.photoUrl),
-                        child: const Text(
-                          'Post',
-                          style: TextStyle(
-                              color: Colors.blueAccent,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 15),
-                        ))
-                  ],
-                ),
-                body: Column(
+    return _file == null
+        ? Center(
+            child: IconButton(
+                onPressed: () {
+                  _selectImage(context);
+                },
+                icon: const Icon(Icons.upload)),
+          )
+        : Scaffold(
+            appBar: AppBar(
+              backgroundColor: mobileBackgroundColor,
+              leading: IconButton(
+                  onPressed: clearImage,
+                  icon: const Icon(CupertinoIcons.arrow_left)),
+              title: const Text('Post to'),
+              centerTitle: false,
+              actions: [
+                TextButton(
+                    onPressed: () =>
+                        postImage(user.uid, user.username, user.photoUrl),
+                    child: const Text(
+                      'Post',
+                      style: TextStyle(
+                          color: Colors.blueAccent,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15),
+                    ))
+              ],
+            ),
+            body: Column(
+              children: [
+                _isLoading
+                    ? const LinearProgressIndicator()
+                    : const Padding(
+                        padding: EdgeInsets.only(top: 0),
+                      ),
+                const Divider(color: mobileBackgroundColor,),  
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CircleAvatar(
-                          backgroundImage: NetworkImage(user.photoUrl),
+                    CircleAvatar(
+                      backgroundImage: NetworkImage(user.photoUrl),
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4,
+                      child: TextField(
+                        controller: _descriptionController,
+                        decoration: const InputDecoration(
+                          hintText: 'write a captions...',
+                          border: InputBorder.none,
                         ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.4,
-                          child: TextField(
-                            controller: _descriptionController,
-                            decoration: const InputDecoration(
-                              hintText: 'write a captions...',
-                              border: InputBorder.none,
-                            ),
-                            maxLines: 8,
-                          ),
-                        ),
-                        SizedBox(
-                          height: 45,
-                          width: 45,
-                          child: AspectRatio(
-                            aspectRatio: 487 / 451,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                image: DecorationImage(
-                                  image: MemoryImage(_file!),
-                                  fit: BoxFit.fill,
-                                  alignment: FractionalOffset.topCenter,
-                                ),
-                              ),
+                        maxLines: 8,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 45,
+                      width: 45,
+                      child: AspectRatio(
+                        aspectRatio: 487 / 451,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            image: DecorationImage(
+                              image: MemoryImage(_file!),
+                              fit: BoxFit.fill,
+                              alignment: FractionalOffset.topCenter,
                             ),
                           ),
                         ),
-                        const Divider(),
-                      ],
-                    )
+                      ),
+                    ),
+                    const Divider(),
                   ],
-                ),
-              );
-      } 
+                )
+              ],
+            ),
+          );
   }
+}
