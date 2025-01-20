@@ -46,12 +46,13 @@ class FirestoreMethods {
     return res;
   }
 
-  // add the likes in the firebaseFirestore
+  // add the likes data in the FirebaseFirestore
   Future<void> likePost(String postId, String uid, List likes) async {
     try {
       // remove and add the likes from the uid
       if (likes.contains(uid)) {
-       await _firestore.collection('posts').doc(postId).update({ // for remove
+        await _firestore.collection('posts').doc(postId).update({
+          // for remove
           'likes': FieldValue.arrayRemove([uid]),
         });
       } else {
@@ -60,7 +61,39 @@ class FirestoreMethods {
         });
       }
     } catch (e) {
-      print(e.toString(),);
+      print(
+        e.toString(),
+      );
     }
+  }
+
+    Future<String> postComment(String postId, String uid, String text, String name,
+      String profilePic) async {
+    String res = 'some error occured';
+    try {
+      if (text.isNotEmpty) {
+        String commentId =const Uuid().v1();
+        await _firestore
+            .collection('posts')
+            .doc(postId)
+            .collection('comments')
+            .doc(commentId)
+            .set({
+          'profilePic': profilePic, // these stuffs will be added to firebase
+          'name': name,
+          'uid': uid,
+          'text': text,
+          'commentId': commentId,
+          'datePublished': DateTime.now(),
+        });
+      } else {
+        res = 'text is empty';
+      }
+      res = 'success';
+    } catch (e) {
+      print('Error posting comment: $e');
+      res = e.toString();
+    }
+    return res;
   }
 }
