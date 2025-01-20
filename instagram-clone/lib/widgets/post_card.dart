@@ -1,26 +1,40 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:insta_demo/models/users.dart';
+import 'package:insta_demo/providers/user_provider.dart';
+import 'package:insta_demo/resources/firestore_methods.dart';
+import 'package:insta_demo/screens/comment_screen.dart';
 import 'package:insta_demo/utils/colors.dart';
+import 'package:insta_demo/widgets/like_animation.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-class PostCard extends StatelessWidget {
-  const PostCard({super.key,required this.snap});
+class PostCard extends StatefulWidget {
+  const PostCard({super.key, required this.snap});
   final snap;
 
   @override
+  State<PostCard> createState() => _PostCardState();
+}
+
+class _PostCardState extends State<PostCard> {
+  bool isLikeAnimating = false;
+  @override
   Widget build(BuildContext context) {
+    final Users user = Provider.of<UserProvider>(context).getUser;
     return Container(
       color: mobileBackgroundColor,
       child: Column(
         children: [
           ListTile(
-            leading:  CircleAvatar(
+            leading: CircleAvatar(
               radius: 18,
               backgroundImage: NetworkImage(
-                snap['profileImage'],
+                widget.snap['profileImage'],
               ),
             ),
-            title: Text(snap['username']),
+            title: Text(widget.snap['username']),
             // subtitle: Text('place'),
             trailing: IconButton(
               onPressed: () {
@@ -50,25 +64,79 @@ class PostCard extends StatelessWidget {
             ),
           ),
           // Image Section
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.35,
-            width: double.infinity,
-            child: Image.network(
-              snap['postUrl'],
-              fit: BoxFit.cover,
+          GestureDetector(
+            onDoubleTap: () async {
+              await FirestoreMethods().likePost(
+                  widget.snap['postId'], user.uid, widget.snap['likes']);
+              setState(() {
+                isLikeAnimating = true;
+              });
+            },
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.35,
+                  width: double.infinity,
+                  child: Image.network(
+                    widget.snap['postUrl'],
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                // add the animation of like button when we doubleTap on the post
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isLikeAnimating ? 1 : 0,
+                  child: LikeAnimationState(
+                    child: const Icon(
+                      Icons.favorite,
+                      color: Colors.white,
+                      size: 100,
+                    ),
+                    isAnimating: isLikeAnimating,
+                    duration: Duration(
+                      milliseconds: 400,
+                    ),
+                    onEnd: () {
+                      setState(() {
+                        isLikeAnimating = false;
+                      });
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-          // lic=ke,comment section
+          // like,comment section
 
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
+                  LikeAnimationState(
+                    isAnimating: widget.snap['likes'].contains(user.uid),
+                    smallLike: true,
+                    child: IconButton(
+                        onPressed: () async {
+                          await FirestoreMethods().likePost(
+                              widget.snap['postId'],
+                              user.uid,
+                              widget.snap['likes']);
+                        },
+                        // like animation when we tap the icon it turns to red
+                        icon: widget.snap['likes'].contains(user.uid)
+                            ? const Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                              )
+                            : const Icon(CupertinoIcons.heart)),
+                  ),
                   IconButton(
-                      onPressed: () {}, icon: const Icon(CupertinoIcons.heart)),
-                  IconButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => CommentScreen()));
+                      },
                       icon: const Icon(Icons.comment_outlined)),
                   IconButton(onPressed: () {}, icon: const Icon(Icons.send)),
                 ],
@@ -95,7 +163,7 @@ class PostCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                     child: Text(
-                      '${snap['likes'].length} likes',
+                      '${widget.snap['likes'].length} likes',
                       style: Theme.of(context).textTheme.bodySmall,
                     )),
                 Container(
@@ -108,12 +176,11 @@ class PostCard extends StatelessWidget {
                     style: const TextStyle(color: primaryColor),
                     children: [
                       TextSpan(
-                        text: snap['username'],
+                        text: widget.snap['username'],
                         style: TextStyle(fontWeight: FontWeight.w800),
                       ),
-                      
                       TextSpan(
-                        text: snap['description'],
+                        text: widget.snap['description'],
                       ),
                     ],
                   )),
@@ -122,7 +189,7 @@ class PostCard extends StatelessWidget {
                   onTap: () {},
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child:const Text(
+                    child: const Text(
                       "view all 69 comments",
                       style: TextStyle(fontSize: 16, color: secondaryColor),
                     ),
@@ -131,8 +198,9 @@ class PostCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    DateFormat.yMMMd().format(snap['datePublished'].toDate()),
-                    style:const TextStyle(fontSize: 14, color: secondaryColor),
+                    DateFormat.yMMMd()
+                        .format(widget.snap['datePublished'].toDate()),
+                    style: const TextStyle(fontSize: 14, color: secondaryColor),
                   ),
                 ),
               ],
