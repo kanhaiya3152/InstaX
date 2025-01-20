@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:insta_demo/utils/colors.dart';
+import 'package:intl/intl.dart';
 
 class PostCard extends StatelessWidget {
-  const PostCard({super.key});
+  const PostCard({super.key,required this.snap});
+  final snap;
 
   @override
   Widget build(BuildContext context) {
@@ -12,13 +14,14 @@ class PostCard extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: const CircleAvatar(
+            leading:  CircleAvatar(
               radius: 18,
               backgroundImage: NetworkImage(
-                  'https://cdn3.pixelcut.app/7/20/uncrop_hero_bdf08a8ca6.jpg'),
+                snap['profileImage'],
+              ),
             ),
-            title: Text('Username'),
-            subtitle: Text('place'),
+            title: Text(snap['username']),
+            // subtitle: Text('place'),
             trailing: IconButton(
               onPressed: () {
                 showDialog(
@@ -51,7 +54,7 @@ class PostCard extends StatelessWidget {
             height: MediaQuery.of(context).size.height * 0.35,
             width: double.infinity,
             child: Image.network(
-              'https://cdn3.pixelcut.app/7/20/uncrop_hero_bdf08a8ca6.jpg',
+              snap['postUrl'],
               fit: BoxFit.cover,
             ),
           ),
@@ -92,7 +95,7 @@ class PostCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                     child: Text(
-                      '134 likes',
+                      '${snap['likes'].length} likes',
                       style: Theme.of(context).textTheme.bodySmall,
                     )),
                 Container(
@@ -105,11 +108,12 @@ class PostCard extends StatelessWidget {
                     style: const TextStyle(color: primaryColor),
                     children: [
                       TextSpan(
-                        text: 'username',
+                        text: snap['username'],
                         style: TextStyle(fontWeight: FontWeight.w800),
                       ),
+                      
                       TextSpan(
-                        text: ' Hey this is some description to be replaced',
+                        text: snap['description'],
                       ),
                     ],
                   )),
@@ -117,8 +121,8 @@ class PostCard extends StatelessWidget {
                 InkWell(
                   onTap: () {},
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 4),
-                    child: Text(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child:const Text(
                       "view all 69 comments",
                       style: TextStyle(fontSize: 16, color: secondaryColor),
                     ),
@@ -127,8 +131,8 @@ class PostCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.symmetric(vertical: 4),
                   child: Text(
-                    '19/01/25',
-                    style: TextStyle(fontSize: 14, color: secondaryColor),
+                    DateFormat.yMMMd().format(snap['datePublished'].toDate()),
+                    style:const TextStyle(fontSize: 14, color: secondaryColor),
                   ),
                 ),
               ],
