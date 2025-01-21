@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class CommentCard extends StatefulWidget {
-  const CommentCard({super.key});
+  const CommentCard({super.key,required this.snap});
+  final snap;
 
   @override
   State<CommentCard> createState() => _CommentCardState();
@@ -16,15 +18,26 @@ class _CommentCardState extends State<CommentCard> {
       child: ListTile(
         leading: CircleAvatar(
           radius: 18,
-          backgroundImage: NetworkImage('https://gratisography.com/wp-content/uploads/2024/11/gratisography-augmented-reality-800x525.jpg'),
+          backgroundImage: NetworkImage(
+              widget.snap['profilePic']),
         ),
-        title: Text('username'),
-        subtitle: Text('Nice pic bro!'),
+        title: Row(
+          children: [
+            Text('${widget.snap['name']}',),
+            SizedBox(width: 10,),
+            Text(DateFormat.yMMMd().format(
+              widget.snap['datePublished'].toDate(),
+            ),style: TextStyle(fontSize: 12),),
+          ],
+        ),
+        subtitle: Text('${widget.snap['text']}'),
         trailing: IconButton(
-          onPressed: (){},
-          icon: Icon(CupertinoIcons.heart,size: 20,)
-          ),
+            onPressed: () {},
+            icon: Icon(
+              CupertinoIcons.heart,
+              size: 20,
+            )),
       ),
     );
   }
-}         
+}
