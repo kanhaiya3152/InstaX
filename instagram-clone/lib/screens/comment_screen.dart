@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:insta_demo/models/users.dart';
@@ -32,7 +33,27 @@ class _CommentScreenState extends State<CommentScreen> {
         backgroundColor: mobileBackgroundColor,
         title: Text('comments'),
       ),
-      body: CommentCard(),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('posts')
+            .doc(widget.snap['postId'])
+            .collection('comments')
+            .orderBy('datePublished', descending: true)// recent comments will show in top ,Is is for sorting the comments according to date
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          return ListView.builder(
+            itemCount: snapshot.data!.docs.length,
+            itemBuilder: (context, index) => CommentCard(
+              snap: snapshot.data!.docs[index].data(),
+            ),
+          );
+        },
+      ),
       bottomNavigationBar: SafeArea(
           child: Container(
         height: kToolbarHeight, // height of appBar
@@ -55,13 +76,17 @@ class _CommentScreenState extends State<CommentScreen> {
           trailing: TextButton(
               onPressed: () async {
                 await FirestoreMethods().postComment(
-                    widget.snap['postId'],
-                    user.uid,
-                    _commentController.text,
-                    user.username,
-                    user.photoUrl);
+                  widget.snap['postId'],
+                  user.uid,
+                  _commentController.text,
+                  user.username,
+                  user.photoUrl,
+                );
+                setState(() {
+                  _commentController.text = ""; // when we post the comment after that the comment disappear
+                });
               },
-              child:const Text(
+              child: const Text(
                 'Post',
                 style: TextStyle(
                   color: Colors.blueAccent,
