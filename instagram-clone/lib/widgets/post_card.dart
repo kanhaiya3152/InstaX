@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:insta_demo/providers/user_provider.dart';
 import 'package:insta_demo/resources/firestore_methods.dart';
 import 'package:insta_demo/screens/comment_screen.dart';
 import 'package:insta_demo/utils/colors.dart';
+import 'package:insta_demo/utils/utils.dart';
 import 'package:insta_demo/widgets/like_animation.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +22,29 @@ class PostCard extends StatefulWidget {
 
 class _PostCardState extends State<PostCard> {
   bool isLikeAnimating = false;
+  int commentLen = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    getComments();
+  }
+
+  void getComments() async {
+    try {
+      QuerySnapshot snap = await FirebaseFirestore.instance
+          .collection('posts')
+          .doc(widget.snap['postId'])
+          .collection('comments')
+          .get();
+
+      commentLen = snap.docs.length; // length of comments
+    } catch (e) {
+      showSnackBar(e.toString(), context);
+    }
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final Users user = Provider.of<UserProvider>(context).getUser;
@@ -49,7 +74,12 @@ class _PostCardState extends State<PostCard> {
                           ]
                               .map(
                                 (e) => InkWell(
-                                  onTap: () {},
+                                  onTap: () async {
+                                    FirestoreMethods()
+                                        .deletePost(widget.snap['postId']);
+
+                                    Navigator.of(context).pop();
+                                  },
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 16, vertical: 12),
@@ -88,7 +118,7 @@ class _PostCardState extends State<PostCard> {
                   duration: const Duration(milliseconds: 200),
                   opacity: isLikeAnimating ? 1 : 0,
                   child: LikeAnimationState(
-                    child: const Icon(
+                    child: Icon(
                       Icons.favorite,
                       color: Colors.white,
                       size: 100,
@@ -136,8 +166,8 @@ class _PostCardState extends State<PostCard> {
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (ctx) => CommentScreen(
-                              snap: widget.snap,
-                            )));
+                                  snap: widget.snap,
+                                )));
                       },
                       icon: const Icon(Icons.comment_outlined)),
                   IconButton(onPressed: () {}, icon: const Icon(Icons.send)),
@@ -191,8 +221,8 @@ class _PostCardState extends State<PostCard> {
                   onTap: () {},
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: const Text(
-                      "view all 69 comments",
+                    child: Text(
+                      "view all $commentLen comments",
                       style: TextStyle(fontSize: 16, color: secondaryColor),
                     ),
                   ),
