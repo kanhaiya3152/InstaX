@@ -33,14 +33,14 @@ class _LikeAnimationStateState extends State<LikeAnimationState>
           milliseconds: widget.duration.inMilliseconds ~/ 2,
         ));
 
-    scale = Tween<double>(begin: 1, end: 1.2).animate(controller);
+    scale = Tween<double>(begin: 1, end: 1.2).animate(controller); // decides size of animation
   }
 
   @override
   void didUpdateWidget(covariant LikeAnimationState oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (widget.isAnimating != oldWidget) {
+    if (widget.isAnimating != oldWidget.isAnimating) {
       startAnimation();
     }
   }

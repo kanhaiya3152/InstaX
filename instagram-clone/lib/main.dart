@@ -4,6 +4,7 @@ import 'package:insta_demo/responsive/res_layout.dart';
 import 'package:insta_demo/responsive/web_screen_layout.dart';
 import 'package:insta_demo/screens/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:insta_demo/screens/splash_screen.dart';
 // import 'package:insta_demo/screens/login_screen.dart';
 // import 'package:insta_demo/screens/signup_screen.dart';
 import 'package:insta_demo/utils/colors.dart';
@@ -61,7 +62,7 @@ class MyApp extends StatelessWidget {
                 );
               }
       
-              return const LoginScreen();
+              return const SplashScreen();
             }),
       ),
     );

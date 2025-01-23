@@ -14,6 +14,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController searchController = TextEditingController();
   bool isShowUsers = false;
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,64 +26,77 @@ class _SearchScreenState extends State<SearchScreen> {
             onFieldSubmitted: (String _) {
               setState(() {
                 isShowUsers = true;
+                // isLoading = true;
               });
             },
           ),
         ),
-        body: isShowUsers
-            ? FutureBuilder(
-                future: FirebaseFirestore.instance
-                    .collection('users')
-                    .where('username',
-                        isGreaterThanOrEqualTo: searchController.text)
-                    .get(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
+        body: isLoading
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : isShowUsers
+                ? FutureBuilder(
+                    future: FirebaseFirestore.instance
+                        .collection('users')
+                        .where('username',
+                            isGreaterThanOrEqualTo: searchController.text)
+                        .get(),
+                        
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                  return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
-                      return InkWell(
-                        onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (ctx) => ProfileScreen(
-                                  uid: snapshot.data!.docs[index]['uid'])));
+                      return ListView.builder(
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) {
+                          return InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (ctx) => ProfileScreen(
+                                      uid: snapshot.data!.docs[index]['uid'])));
+                            },
+                            child: ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: NetworkImage(
+                                    snapshot.data!.docs[index]['photoUrl']),
+                              ),
+                              title:
+                                  Text(snapshot.data!.docs[index]['username']),
+                            ),
+                          );
                         },
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(
-                                snapshot.data!.docs[index]['photoUrl']),
-                          ),
-                          title: Text(snapshot.data!.docs[index]['username']),
-                        ),
                       );
                     },
-                  );
-                },
-              )
-            : FutureBuilder(
-                future: FirebaseFirestore.instance.collection('posts').get(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(
-                      child: CircularProgressIndicator(),
-                    );
-                  }
+                  )
+                : 
+                FutureBuilder(
+                    future:
+                        FirebaseFirestore.instance.collection('posts').get(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
 
-                  return GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                    ),
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) => Image.network(
-                      snapshot.data!.docs[index]['postUrl'],
-                    ),
-                  );
-                }));
+                      return MasonryGridView.builder(
+                        gridDelegate:
+                        const SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          // crossAxisSpacing: 5,
+                          // mainAxisSpacing: 1.5,
+                          // childAspectRatio: 1,
+                        ),
+                        itemCount: snapshot.data!.docs.length,
+                        itemBuilder: (context, index) => Image.network(
+                          snapshot.data!.docs[index]['postUrl'],
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    }));
   }
 }

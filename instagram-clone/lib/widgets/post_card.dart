@@ -44,6 +44,18 @@ class _PostCardState extends State<PostCard> {
     }
     setState(() {});
   }
+  
+  // Add the comment screen 
+  void _openAddExpenseOverlay() {
+    showModalBottomSheet(
+      backgroundColor: mobileBackgroundColor,
+      showDragHandle: true,
+      useSafeArea : true,
+      isScrollControlled: true,
+      context: context,
+      builder: (ctx) => CommentScreen(snap: widget.snap,),
+            );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +108,7 @@ class _PostCardState extends State<PostCard> {
           // Image Section
           GestureDetector(
             onDoubleTap: () async {
-              await FirestoreMethods().likePost(
+              await FirestoreMethods().likePost1(
                   widget.snap['postId'], user.uid, widget.snap['likes']);
               setState(() {
                 isLikeAnimating = true;
@@ -124,7 +136,7 @@ class _PostCardState extends State<PostCard> {
                       size: 100,
                     ),
                     isAnimating: isLikeAnimating,
-                    duration: Duration(
+                    duration:const Duration(
                       milliseconds: 400,
                     ),
                     onEnd: () {
@@ -161,16 +173,12 @@ class _PostCardState extends State<PostCard> {
                                 color: Colors.red,
                               )
                             : const Icon(CupertinoIcons.heart)),
-                  ),
-                  IconButton(
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (ctx) => CommentScreen(
-                                  snap: widget.snap,
-                                )));
-                      },
-                      icon: const Icon(Icons.comment_outlined)),
-                  IconButton(onPressed: () {}, icon: const Icon(Icons.send)),
+                  ),Text('${widget.snap['likes'].length}'),
+                  TextButton(
+                     onPressed: _openAddExpenseOverlay,
+                     child: Image.asset('assets/Comment.png')),
+                     Text('$commentLen'),
+                  TextButton(onPressed: (){}, child:Image.asset('assets/Messanger.png') ),
                 ],
               ),
               Row(

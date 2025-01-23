@@ -66,6 +66,22 @@ class FirestoreMethods {
       );
     }
   }
+  Future<void> likePost1(String postId, String uid, List likes) async {
+    try {
+      // remove and add the likes from the uid
+      if (likes.contains(uid)) {
+       
+      } else {
+        await _firestore.collection('posts').doc(postId).update({
+          'likes': FieldValue.arrayUnion([uid]), // for add
+        });
+      }
+    } catch (e) {
+      print(
+        e.toString(),
+      );
+    }
+  }
 
   Future<String> postComment(String postId, String uid, String text,
       String name, String profilePic) async {
@@ -106,6 +122,36 @@ class FirestoreMethods {
       print(
         e.toString(),
       );
+    }
+  }
+
+  Future<void> followUser(
+    String followId,
+    String uid,
+  ) async {
+    try {
+      DocumentSnapshot snap =
+          await _firestore.collection('users').doc(uid).get();
+      List following = (snap.data() as dynamic)['follwing'];
+
+      if (following.contains(followId)) {
+        await _firestore.collection('users').doc(followId).update({
+          'followers': FieldValue.arrayRemove([uid]),
+        });
+        await _firestore.collection('users').doc(uid).update({
+          'Following': FieldValue.arrayRemove([followId]),
+        });
+      }
+      else{
+        await _firestore.collection('users').doc(followId).update({
+          'followers': FieldValue.arrayUnion([uid]),
+        });
+        await _firestore.collection('users').doc(uid).update({
+          'Following': FieldValue.arrayUnion([followId]),
+        });
+      }
+    } catch (e) {
+      print(e.toString());
     }
   }
 }

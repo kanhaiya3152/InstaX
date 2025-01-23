@@ -31,7 +31,8 @@ class _CommentScreenState extends State<CommentScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: mobileBackgroundColor,
-        title: Text('comments'),
+        centerTitle: true,
+        title: Text('comments',style: TextStyle(color: primaryColor,fontSize: 16),),
       ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance
@@ -67,8 +68,9 @@ class _CommentScreenState extends State<CommentScreen> {
           ),
           subtitle: TextField(
             controller: _commentController,
-            decoration: InputDecoration(
-              hintText: 'Comment as ${user.username}',
+            decoration:const InputDecoration(
+              hintText: 'Add a comment... ',
+              hintStyle: TextStyle(color: secondaryColor,fontSize: 15),
               border: InputBorder.none,
             ),
           ),
